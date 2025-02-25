@@ -202,9 +202,9 @@ For classification and regression using packages \pkg{bst} and \pkg{plyr} with t
 }
 
 
-\strong{Boosted Logistic Regression} (\code{method = 'LogitBoost'})
+\strong{Boosted Logistic Regression} (\code{method = 'LogitBoostReg'})
 
-For classification using package \pkg{caTools} with tuning parameters:
+For classification using package \pkg{TestingTools} with tuning parameters:
 \itemize{
 \item Number of  Boosting Iterations (\code{nIter}, numeric)
 }
