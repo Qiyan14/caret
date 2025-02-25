@@ -2,7 +2,7 @@
 library(caret)
 library(kernlab)
 library(class)
-library(caTools)
+library(TestingTools)
 library(pROC)
 library(DMwR)
 library(randomForest)
@@ -105,7 +105,7 @@ Released   : 20120902
   <a href="#Components">Model Components</a>
   </li>
   <li>
-  <a href="#Illustration2">Illustrative Example 2: Something More Complicated - LogitBoost</a>
+  <a href="#Illustration2">Illustrative Example 2: Something More Complicated - LogitBoostReg</a>
   </li>
   <li>
   <a href="#Illustration3">Illustrative Example 3: Nonstandard Formulas</a>  </li>
@@ -495,7 +495,7 @@ plot(Laplacian,  scales = list(x = list(log = 2)))
     end.rcode-->
 
 <div id="Illustration2"></div>
-<h1>Illustrative Example 2: Something More Complicated - LogitBoost</h1>
+<h1>Illustrative Example 2: Something More Complicated - LogitBoostReg</h1>
 
 <h2>The loop Element</h2>
 
@@ -503,10 +503,10 @@ plot(Laplacian,  scales = list(x = list(log = 2)))
 This function can be used to create custom loops for models to tune over. In most cases, the function can just return the existing tuning grid.
 </p>
 <p>
-For example, a <span class="mx funCall">LogitBoost</span> model can be trained over the number of boosting iterations. In the <a href="http://cran.r-project.org/web/packages/caTools/index.html"><strong>caTools</strong></a> package, the <span class="mx funCall">LogitBoost</span> function can be used to fit this model. For example:
+For example, a <span class="mx funCall">LogitBoostReg</span> model can be trained over the number of boosting iterations. In the <a href="http://cran.r-project.org/web/packages/TestingTools/index.html"><strong>TestingTools</strong></a> package, the <span class="mx funCall">LogitBoostReg</span> function can be used to fit this model. For example:
 </p>
 <!--begin.rcode custom_lb, eval=FALSE
-mod <- LogitBoost(as.matrix(x), y, nIter = 51)
+mod <- LogitBoostReg(as.matrix(x), y, nIter = 51)
     end.rcode-->    
 
 <p>
@@ -517,7 +517,7 @@ lbGrid <- data.frame(nIter = seq(11, 51, by = 10))
     end.rcode-->    
 
 <p>
-During resampling, <span class="mx funCall">train</span> could loop over all five rows in <code>lbGrid</code> and fit five models. However, the <span class="mx funCall">predict.LogitBoost</span> function has an argument called <span class="mx arg">nIter</span> that can produce, in this case, predictions from <code>mod</code> for all five models. 
+During resampling, <span class="mx funCall">train</span> could loop over all five rows in <code>lbGrid</code> and fit five models. However, the <span class="mx funCall">predict.LogitBoostReg</span> function has an argument called <span class="mx arg">nIter</span> that can produce, in this case, predictions from <code>mod</code> for all five models. 
 </p>
 <p>
 Instead of <span class="mx funCall">train</span> fitting five models, we could fit a single model with <span class="mx arg">nIter</span> = <!--rinline '51' --> and derive predictions for all five models using only <code>mod</code>. 
@@ -536,7 +536,7 @@ The <span class="mx arg">loop</span> argument for models is used to produce two 
  </li>
 </ul>
 <p>
-Going back to the <span class="mx funCall">LogitBoost</span> example, we could have:
+Going back to the <span class="mx funCall">LogitBoostReg</span> example, we could have:
 </p>
 <!--begin.rcode custom_lb_loops
     loop <- data.frame(.nIter = 51)
@@ -557,7 +557,7 @@ There are other models built-in to <a href="http://cran.r-project.org/web/packag
 If the <span class="mx arg">loop</span> argument is left <code><!--rinline 'NULL' --></code> the results of <span class="mx arg">tuneGrid</span> are used as the simple loop and is recommended for most situations. Note that the machinery that is used to "derive" the extra predictions is up to the user to create, typically in the <span class="mx arg">predict</span> and <span class="mx arg">prob</span>  elements of the custom model object. 
 </p>
 <p>    
-For the <span class="mx funCall">LogitBoost</span> model, some simple code to create these objects would be:
+For the <span class="mx funCall">LogitBoostReg</span> model, some simple code to create these objects would be:
 </p>
 
 <!--begin.rcode custom_lb_loop_funcs
@@ -575,12 +575,12 @@ For the <span class="mx funCall">LogitBoost</span> model, some simple code to cr
     submodels
     end.rcode-->   
 <p>
-For the <span class="mx funCall">LogitBoost</span> custom model object, we could use this code in the <span class="mx arg">predict</span> slot:
+For the <span class="mx funCall">LogitBoostReg</span> custom model object, we could use this code in the <span class="mx arg">predict</span> slot:
 <p>
 <!--begin.rcode custom_lb_pred, tidy=FALSE, cache=TRUE
 lbPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
   ## This model was fit with the maximum value of nIter
-  out <- caTools::predict.LogitBoost(modelFit, newdata, type="class")
+  out <- TestingTools::predict.LogitBoostReg(modelFit, newdata, type="class")
   
   ## In this case, 'submodels' is a data frame with the other values of
   ## nIter. We loop over these to get the other predictions.
@@ -591,7 +591,7 @@ lbPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
     out[[1]] <- tmp
     
     for(j in seq(along = submodels$nIter)) {
-      out[[j+1]] <- caTools::predict.LogitBoost(modelFit,
+      out[[j+1]] <- TestingTools::predict.LogitBoostReg(modelFit,
                                                 newdata,
                                                 nIter = submodels$nIter[j])
       }
@@ -618,11 +618,11 @@ A few more notes:
   </li>
 </ul>
 
-<p> Here is a slimmed down version of the logitBoost code already in the package:
+<p> Here is a slimmed down version of the LogitBoostReg code already in the package:
 </p>
 
 <!--begin.rcode custom_lb_funcs, tidy=FALSE
-lbFuncs <- list(library = "caTools",
+lbFuncs <- list(library = "TestingTools",
                 loop = function(grid) {            
                   loop <- grid[which.max(grid$nIter),,drop = FALSE]
                   submodels <- grid[-which.max(grid$nIter),,drop = FALSE]
@@ -640,7 +640,7 @@ lbFuncs <- list(library = "caTools",
                   out
                 },
                 fit = function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-                  LogitBoost(as.matrix(x), y, nIter = param$nIter)
+                  LogitBoostReg(as.matrix(x), y, nIter = param$nIter)
                 },
                 predict = function(modelFit, newdata, preProc = NULL, submodels = NULL) {
                   out <- predict(modelFit, newdata, type="class")
@@ -715,7 +715,7 @@ for(i in 2:nrow(bigGrid)){
 trellis.par.set(caretTheme())
 xyplot(SpeedUp ~ nIter, 
        data = results,
-       xlab = "LogitBoost Iterations", 
+       xlab = "LogitBoostReg Iterations", 
        ylab = "Speed-Up",
        type = c("p", "g", "r"))
 end.rcode--> 
