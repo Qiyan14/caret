@@ -60,7 +60,7 @@ Released   : 20120902
   <a href="#Components">Model Components</a>
   </li>
   <li>
-  <a href="#Illustration2">Illustrative Example 2: Something More Complicated - LogitBoost</a>
+  <a href="#Illustration2">Illustrative Example 2: Something More Complicated - LogitBoostReg</a>
   </li>
   <li>
   <a href="#Illustration3">Illustrative Example 3: Nonstandard Formulas</a>  </li>
@@ -472,7 +472,7 @@ A plot of the data shows that the model doesn't change when the cost value is ab
 </div></div>
 
 <div id="Illustration2"></div>
-<h1>Illustrative Example 2: Something More Complicated - LogitBoost</h1>
+<h1>Illustrative Example 2: Something More Complicated - LogitBoostReg</h1>
 
 <h2>The loop Element</h2>
 
@@ -480,9 +480,9 @@ A plot of the data shows that the model doesn't change when the cost value is ab
 This function can be used to create custom loops for models to tune over. In most cases, the function can just return the existing tuning grid.
 </p>
 <p>
-For example, a <span class="mx funCall">LogitBoost</span> model can be trained over the number of boosting iterations. In the <a href="http://cran.r-project.org/web/packages/caTools/index.html"><strong>caTools</strong></a> package, the <span class="mx funCall">LogitBoost</span> function can be used to fit this model. For example:
+For example, a <span class="mx funCall">LogitBoostReg</span> model can be trained over the number of boosting iterations. In the <a href="http://cran.r-project.org/web/packages/TestingTools/index.html"><strong>TestingTools</strong></a> package, the <span class="mx funCall">LogitBoostReg</span> function can be used to fit this model. For example:
 </p>
-<div class="chunk" id="custom_lb"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">mod</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">LogitBoost</span><span class="hl std">(</span><span class="hl kwd">as.matrix</span><span class="hl std">(x), y,</span> <span class="hl kwc">nIter</span> <span class="hl std">=</span> <span class="hl num">51</span><span class="hl std">)</span>
+<div class="chunk" id="custom_lb"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">mod</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">LogitBoostReg</span><span class="hl std">(</span><span class="hl kwd">as.matrix</span><span class="hl std">(x), y,</span> <span class="hl kwc">nIter</span> <span class="hl std">=</span> <span class="hl num">51</span><span class="hl std">)</span>
 </pre></div>
 </div></div>
 
@@ -494,7 +494,7 @@ If we were to tune the model evaluating models where the number of iterations wa
 </div></div>
 
 <p>
-During resampling, <span class="mx funCall">train</span> could loop over all five rows in <code>lbGrid</code> and fit five models. However, the <span class="mx funCall">predict.LogitBoost</span> function has an argument called <span class="mx arg">nIter</span> that can produce, in this case, predictions from <code>mod</code> for all five models. 
+During resampling, <span class="mx funCall">train</span> could loop over all five rows in <code>lbGrid</code> and fit five models. However, the <span class="mx funCall">predict.LogitBoostReg</span> function has an argument called <span class="mx arg">nIter</span> that can produce, in this case, predictions from <code>mod</code> for all five models. 
 </p>
 <p>
 Instead of <span class="mx funCall">train</span> fitting five models, we could fit a single model with <span class="mx arg">nIter</span> = <span class="hl num">51</span> and derive predictions for all five models using only <code>mod</code>. 
@@ -513,7 +513,7 @@ The <span class="mx arg">loop</span> argument for models is used to produce two 
  </li>
 </ul>
 <p>
-Going back to the <span class="mx funCall">LogitBoost</span> example, we could have:
+Going back to the <span class="mx funCall">LogitBoostReg</span> example, we could have:
 </p>
 <div class="chunk" id="custom_lb_loops"><div class="rcode"><div class="source"><pre class="knitr r">    <span class="hl std">loop</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">data.frame</span><span class="hl std">(</span><span class="hl kwc">.nIter</span> <span class="hl std">=</span> <span class="hl num">51</span><span class="hl std">)</span>
 <span class="hl std">loop</span>
@@ -545,7 +545,7 @@ There are other models built-in to <a href="http://cran.r-project.org/web/packag
 If the <span class="mx arg">loop</span> argument is left <code><span class="hl kwa">NULL</span></code> the results of <span class="mx arg">tuneGrid</span> are used as the simple loop and is recommended for most situations. Note that the machinery that is used to "derive" the extra predictions is up to the user to create, typically in the <span class="mx arg">predict</span> and <span class="mx arg">prob</span>  elements of the custom model object. 
 </p>
 <p>    
-For the <span class="mx funCall">LogitBoost</span> model, some simple code to create these objects would be:
+For the <span class="mx funCall">LogitBoostReg</span> model, some simple code to create these objects would be:
 </p>
 
 <div class="chunk" id="custom_lb_loop_funcs"><div class="rcode"><div class="source"><pre class="knitr r">    <span class="hl std">fullGrid</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">data.frame</span><span class="hl std">(</span><span class="hl kwc">nIter</span> <span class="hl std">=</span> <span class="hl kwd">seq</span><span class="hl std">(</span><span class="hl num">11</span><span class="hl std">,</span> <span class="hl num">51</span><span class="hl std">,</span> <span class="hl kwc">by</span> <span class="hl std">=</span> <span class="hl num">10</span><span class="hl std">))</span>
@@ -573,11 +573,11 @@ For the <span class="mx funCall">LogitBoost</span> model, some simple code to cr
 </pre></div>
 </div></div>
 <p>
-For the <span class="mx funCall">LogitBoost</span> custom model object, we could use this code in the <span class="mx arg">predict</span> slot:
+For the <span class="mx funCall">LogitBoostReg</span> custom model object, we could use this code in the <span class="mx arg">predict</span> slot:
 <p>
 <div class="chunk" id="custom_lb_pred"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">lbPred</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">modelFit</span><span class="hl std">,</span> <span class="hl kwc">newdata</span><span class="hl std">,</span> <span class="hl kwc">preProc</span> <span class="hl std">=</span> <span class="hl kwa">NULL</span><span class="hl std">,</span> <span class="hl kwc">submodels</span> <span class="hl std">=</span> <span class="hl kwa">NULL</span><span class="hl std">) {</span>
   <span class="hl com">## This model was fit with the maximum value of nIter</span>
-  <span class="hl std">out</span> <span class="hl kwb">&lt;-</span> <span class="hl std">caTools</span><span class="hl opt">::</span><span class="hl kwd">predict.LogitBoost</span><span class="hl std">(modelFit, newdata,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+  <span class="hl std">out</span> <span class="hl kwb">&lt;-</span> <span class="hl std">TestingTools</span><span class="hl opt">::</span><span class="hl kwd">predict.LogitBoostReg</span><span class="hl std">(modelFit, newdata,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
 
   <span class="hl com">## In this case, 'submodels' is a data frame with the other values of</span>
   <span class="hl com">## nIter. We loop over these to get the other predictions.</span>
@@ -588,7 +588,7 @@ For the <span class="mx funCall">LogitBoost</span> custom model object, we could
     <span class="hl std">out[[</span><span class="hl num">1</span><span class="hl std">]]</span> <span class="hl kwb">&lt;-</span> <span class="hl std">tmp</span>
 
     <span class="hl kwa">for</span><span class="hl std">(j</span> <span class="hl kwa">in</span> <span class="hl kwd">seq</span><span class="hl std">(</span><span class="hl kwc">along</span> <span class="hl std">= submodels</span><span class="hl opt">$</span><span class="hl std">nIter)) {</span>
-      <span class="hl std">out[[j</span><span class="hl opt">+</span><span class="hl num">1</span><span class="hl std">]]</span> <span class="hl kwb">&lt;-</span> <span class="hl std">caTools</span><span class="hl opt">::</span><span class="hl kwd">predict.LogitBoost</span><span class="hl std">(modelFit,</span>
+      <span class="hl std">out[[j</span><span class="hl opt">+</span><span class="hl num">1</span><span class="hl std">]]</span> <span class="hl kwb">&lt;-</span> <span class="hl std">TestingTools</span><span class="hl opt">::</span><span class="hl kwd">predict.LogitBoostReg</span><span class="hl std">(modelFit,</span>
                                                 <span class="hl std">newdata,</span>
                                                 <span class="hl kwc">nIter</span> <span class="hl std">= submodels</span><span class="hl opt">$</span><span class="hl std">nIter[j])</span>
       <span class="hl std">}</span>
@@ -616,10 +616,10 @@ A few more notes:
   </li>
 </ul>
 
-<p> Here is a slimmed down version of the logitBoost code already in the package:
+<p> Here is a slimmed down version of the LogitBoostReg code already in the package:
 </p>
 
-<div class="chunk" id="custom_lb_funcs"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">lbFuncs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">library</span> <span class="hl std">=</span> <span class="hl str">&quot;caTools&quot;</span><span class="hl std">,</span>
+<div class="chunk" id="custom_lb_funcs"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">lbFuncs</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">library</span> <span class="hl std">=</span> <span class="hl str">&quot;TestingTools&quot;</span><span class="hl std">,</span>
                 <span class="hl kwc">loop</span> <span class="hl std">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">grid</span><span class="hl std">) {</span>
                   <span class="hl std">loop</span> <span class="hl kwb">&lt;-</span> <span class="hl std">grid[</span><span class="hl kwd">which.max</span><span class="hl std">(grid</span><span class="hl opt">$</span><span class="hl std">nIter),,</span><span class="hl kwc">drop</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">]</span>
                   <span class="hl std">submodels</span> <span class="hl kwb">&lt;-</span> <span class="hl std">grid[</span><span class="hl opt">-</span><span class="hl kwd">which.max</span><span class="hl std">(grid</span><span class="hl opt">$</span><span class="hl std">nIter),,</span><span class="hl kwc">drop</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">]</span>
@@ -637,7 +637,7 @@ A few more notes:
                   <span class="hl std">out</span>
                 <span class="hl std">},</span>
                 <span class="hl kwc">fit</span> <span class="hl std">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">,</span> <span class="hl kwc">y</span><span class="hl std">,</span> <span class="hl kwc">wts</span><span class="hl std">,</span> <span class="hl kwc">param</span><span class="hl std">,</span> <span class="hl kwc">lev</span><span class="hl std">,</span> <span class="hl kwc">last</span><span class="hl std">,</span> <span class="hl kwc">weights</span><span class="hl std">,</span> <span class="hl kwc">classProbs</span><span class="hl std">,</span> <span class="hl kwc">...</span><span class="hl std">) {</span>
-                  <span class="hl kwd">LogitBoost</span><span class="hl std">(</span><span class="hl kwd">as.matrix</span><span class="hl std">(x), y,</span> <span class="hl kwc">nIter</span> <span class="hl std">= param</span><span class="hl opt">$</span><span class="hl std">nIter)</span>
+                  <span class="hl kwd">LogitBoostReg</span><span class="hl std">(</span><span class="hl kwd">as.matrix</span><span class="hl std">(x), y,</span> <span class="hl kwc">nIter</span> <span class="hl std">= param</span><span class="hl opt">$</span><span class="hl std">nIter)</span>
                 <span class="hl std">},</span>
                 <span class="hl kwc">predict</span> <span class="hl std">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">modelFit</span><span class="hl std">,</span> <span class="hl kwc">newdata</span><span class="hl std">,</span> <span class="hl kwc">preProc</span> <span class="hl std">=</span> <span class="hl kwa">NULL</span><span class="hl std">,</span> <span class="hl kwc">submodels</span> <span class="hl std">=</span> <span class="hl kwa">NULL</span><span class="hl std">) {</span>
                   <span class="hl std">out</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(modelFit, newdata,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
