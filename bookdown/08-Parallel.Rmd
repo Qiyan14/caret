@@ -45,7 +45,7 @@ In reality, `train` only created objects for 3 models and derived the other pred
 `bagEarth`, `blackboost`, `blasso`, `BstLm`, `bstSm`, `bstTree`, `C5.0`,
 `C5.0Cost`, `cubist`, `earth`, `enet`, `foba`, `gamboost`, `gbm`,
 `glmboost`, `glmnet`, `kernelpls`, `lars`, `lars2`, `lasso`, `lda2`,
-`leapBackward`, `leapForward`, `leapSeq`, `LogitBoost`, `pam`,
+`leapBackward`, `leapForward`, `leapSeq`, `LogitBoostReg`, `pam`,
 `partDSA`, `pcr`, `PenalizedLDA`, `pls`, `relaxo`, `rfRules`,
 `rotationForest`, `rotationForestCp`, `rpart`, `rpart2`, `rpartCost`,
 `simpls`, `spikeslab`, `superpc`, `widekernelpls`, `xgbTree`.
