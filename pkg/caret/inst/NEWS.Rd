@@ -2465,7 +2465,7 @@ for classification models
 
 \item Added code for sparse PLS classification.
 
-\item Fix a bug in prediction for \code{caTools::LogitBoost}
+\item Fix a bug in prediction for \code{TestingTools::LogitBoostReg}
 
  }
 }
@@ -2760,7 +2760,7 @@ added to use as alternatives to the \code{\link{extractPrediction}} and
 \item Added C4.5 (aka \code{J48}) and rules-based models (M5 prime) from
 \cpkg{RWeka}.
 
-\item Also added \code{logitBoost} from the \cpkg{caTools}
+\item Also added \code{LogitBoostReg} from the \cpkg{TestingTools}
 package. This package doesn't have a namespace and \cpkg{RWeka} has a
 function with the same name. It was suggested to use the "::" prefix
 to differentiate them (but we'll see how this works).
