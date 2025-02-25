@@ -1,7 +1,7 @@
 ```{r custom_startup,echo=FALSE,message=FALSE,warning=FALSE}
 library(knitr)
 opts_chunk$set(digits = 3, tidy = FALSE, fig.path = 'custom/', dev = 'svg', dev.args = list(bg = "transparent"))
-library(caTools)
+library(TestingTools)
 library(klaR)
 library(mlbench)
 library(kernlab)
@@ -20,7 +20,7 @@ Contents
  - [Introduction](#Introduction)
  - [Illustrative Example 1: SVMs with Laplacian Kernels](#Illustration1)
  - [Model Components](#Components)
- - [Illustrative Example 2: Something More Complicated `LogitBoost`](#Illustration2)
+ - [Illustrative Example 2: Something More Complicated `LogitBoostReg`](#Illustration2)
  - [Illustrative Example 3: Nonstandard Formulas](#Illustration3)
  - [Illustrative Example 4: PLS Feature Extraction Pre-Processing](#Illustration4)
  - [Illustrative Example 5: Optimizing probability thresholds for class imbalances](#Illustration5)
@@ -301,17 +301,17 @@ ggplot(Laplacian) + scale_x_log10()
 
 <div id="Illustration2"></div>
 
-## Illustrative Example 2: Something More Complicated - `LogitBoost`
+## Illustrative Example 2: Something More Complicated - `LogitBoostReg`
 
 ###The loop Element
 
 
 This function can be used to create custom loops for models to tune over. In most cases, the function can just return the existing tuning grid.
 
-For example, a `LogitBoost` model can be trained over the number of boosting iterations. In the [`caTools`](http://cran.r-project.org/web/packages/caTools/index.html) package, the `LogitBoost` function can be used to fit this model. For example:
+For example, a `LogitBoostReg` model can be trained over the number of boosting iterations. In the [`TestingTools`](http://cran.r-project.org/web/packages/TestingTools/index.html) package, the `LogitBoostReg` function can be used to fit this model. For example:
 
 ```{r custom_lb, eval=FALSE}
-mod <- LogitBoost(as.matrix(x), y, nIter = 51)
+mod <- LogitBoostReg(as.matrix(x), y, nIter = 51)
 ``` 
 
 If we were to tune the model evaluating models where the number of iterations was 11, 21, 31, 41 and 51, the grid could be
@@ -320,7 +320,7 @@ If we were to tune the model evaluating models where the number of iterations wa
 lbGrid <- data.frame(nIter = seq(11, 51, by = 10))  
 ``` 
 
-During resampling, `train` could loop over all five rows in `lbGrid` and fit five models. However, the  `predict.LogitBoost` function has an argument called `nIter` that can produce, in this case, predictions from `mod` for all five models.
+During resampling, `train` could loop over all five rows in `lbGrid` and fit five models. However, the  `predict.LogitBoostReg` function has an argument called `nIter` that can produce, in this case, predictions from `mod` for all five models.
 
 Instead of `train` fitting five models, we could fit a single model with `nIter` =  class="hl num">51` and derive predictions for all five models using only `mod`.
 
@@ -331,7 +331,7 @@ The `loop` argument for models is used to produce two objects:
  - `loop`: this is the actual loop that is used by `train`.
  - `submodels` is a *list* that has as many elements as there are rows in `loop`. The list has all the "extra" parameter settings that can be derived for each model.
 
-Going back to the `LogitBoost` example, we could have:
+Going back to the `LogitBoostReg` example, we could have:
 
 ```{r custom_lb_loops}
 loop <- data.frame(.nIter = 51)
@@ -348,7 +348,7 @@ There are other models built-in to [`caret`](http://cran.r-project.org/web/packa
 
 If the `loop` argument is left `NULL` the results of `tuneGrid` are used as the simple loop and is recommended for most situations. Note that the machinery that is used to "derive" the extra predictions is up to the user to create, typically in the `predict` and  `prob` elements of the custom model object.
 
-For the `LogitBoost` model, some simple code to create these objects would be:
+For the `LogitBoostReg` model, some simple code to create these objects would be:
 
 ```{r custom_lb_loop_funcs}
 fullGrid <- data.frame(nIter = seq(11, 51, by = 10))
@@ -365,12 +365,12 @@ submodels <- list(submodels)
 submodels
 ```
 
-For the `LogitBoost` custom model object, we could use this code in the `predict` slot:
+For the `LogitBoostReg` custom model object, we could use this code in the `predict` slot:
 
 ```{r custom_lb_pred, tidy=FALSE, cache=TRUE}
 lbPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
   ## This model was fit with the maximum value of nIter
-  out <- caTools::predict.LogitBoost(modelFit, newdata, type="class")
+  out <- TestingTools::predict.LogitBoostReg(modelFit, newdata, type="class")
   
   ## In this case, 'submodels' is a data frame with the other values of
   ## nIter. We loop over these to get the other predictions.
@@ -381,7 +381,7 @@ lbPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
     out[[1]] <- tmp
     
     for(j in seq(along = submodels$nIter)) {
-      out[[j+1]] <- caTools::predict.LogitBoost(
+      out[[j+1]] <- TestingTools::predict.LogitBoostReg(
         modelFit,
         newdata,
         nIter = submodels$nIter[j])
@@ -398,12 +398,12 @@ A few more notes:
  - The `prob` slot works in the same way. The only difference is that the values saved in the outgoing lists are matrices or data frames of probabilities for each class.
  - After model training (i.e. predicting new samples), the value of `submodels` is set to `NULL` and the code produces a single set of predictions.
  - If the model had one sequential parameter and one fixed parameter, the `loop` data frame would have two columns (one for each parameter). If the model is tuned over more than one value of the fixed parameter, the `submodels` list would have more than one element. If `loop` had 10 rows, then `length(submodels)` would be `10` and `loop[i,]` would be linked to `submodels[[i]]`.
- - In this case, the prediction function was called by namespace too (i.e. `caTools::predict.LogitBoost`). This may not seem necessary but what functions are available can vary depending on what parallel processing technology is being used. For example, the nature of forking used by `doMC` and `doParallel` tends to have easier access to functions while PSOCK methods in `doParallel` do not. It may be easier to take the safe path of using the namespace operator wherever possible to avoid errors that are difficult to track down. 
+ - In this case, the prediction function was called by namespace too (i.e. `TestingTools::predict.LogitBoostReg`). This may not seem necessary but what functions are available can vary depending on what parallel processing technology is being used. For example, the nature of forking used by `doMC` and `doParallel` tends to have easier access to functions while PSOCK methods in `doParallel` do not. It may be easier to take the safe path of using the namespace operator wherever possible to avoid errors that are difficult to track down. 
 
-Here is a slimmed down version of the logitBoost code already in the package:
+Here is a slimmed down version of the LogitBoostReg code already in the package:
 
 ```{r custom_lb_funcs, tidy = FALSE}
-lbFuncs <- list(library = "caTools",
+lbFuncs <- list(library = "TestingTools",
                 loop = function(grid) {            
                   loop <- grid[which.max(grid$nIter),,drop = FALSE]
                   submodels <- grid[-which.max(grid$nIter),,drop = FALSE]
@@ -421,17 +421,17 @@ lbFuncs <- list(library = "caTools",
                   out
                 },
                 fit = function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-                  caTools::LogitBoost(as.matrix(x), y, nIter = param$nIter)
+                  TestingTools::LogitBoostReg(as.matrix(x), y, nIter = param$nIter)
                 },
                 predict = function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-                  out <- caTools::predict.LogitBoost(modelFit, newdata, type="class")
+                  out <- TestingTools::predict.LogitBoostReg(modelFit, newdata, type="class")
                   if(!is.null(submodels)) {                   
                     tmp <- out
                     out <- vector(mode = "list", length = nrow(submodels) + 1)
                     out[[1]] <- tmp
                     
                     for(j in seq(along = submodels$nIter)) {
-                      out[[j+1]] <- caTools::predict.LogitBoost(
+                      out[[j+1]] <- TestingTools::predict.LogitBoostReg(
                         modelFit,
                         newdata,
                         nIter = submodels$nIter[j]
@@ -457,7 +457,7 @@ lb1
 ## Now get rid of the submodel parts
 lbFuncs2 <- lbFuncs
 lbFuncs2$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL) 
-  caTools::predict.LogitBoost(modelFit, newdata, type = "class")
+  TestingTools::predict.LogitBoostReg(modelFit, newdata, type = "class")
 lbFuncs2$loop <- NULL 
 
 set.seed(825)
@@ -493,7 +493,7 @@ for(i in 2:nrow(bigGrid)){
 
 ggplot(results, aes(x = nIter, y = SpeedUp)) + 
   geom_point() + geom_smooth(method = "lm") + 
-  xlab("LogitBoost Iterations") + 
+  xlab("LogitBoostReg Iterations") + 
   ylab("Speed-Up")
 ```
 
